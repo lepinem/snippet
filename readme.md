@@ -10,6 +10,7 @@ tags -- that is, user-defined words or phrases that classify the code, like "aut
 Your application must:
 
 have a comprehensive set of tests for all controllers and models
+
 have registration and login
 allow you to create a snippet
 allow you to see a list of all your snippets

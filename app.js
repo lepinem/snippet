@@ -2,28 +2,22 @@
 
 const express = require('express');
 const app = express();
-const jwt = require('express-jwt');
-const jwtAuthz = require('express-jwt-authz');
-const jwksRsa = require('jwks-rsa');
-const cors = require('cors');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const mustacheExpress = require('mustache-express');
 const dal = require('./dal');
-require('dotenv').config();
 
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: false }))
 
 app.engine('mustache', mustacheExpress())
 app.set('view engine', 'mustache')
 app.set('views', __dirname + '/views')
 
-if (!process.env.AUTH0_DOMAIN || !process.env.AUTH0_AUDIENCE) {
-  throw 'Make sure you have AUTH0_DOMAIN, and AUTH0_AUDIENCE in your .env file';
-}
+app.use(express.static('public'))
 
-app.use(cors());
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
+
+// app.use(expressJWT({ secret: TOKEN_SECRET }).unless({ path: ['/login', '/', '/adduser']}))
 
 app.use(
   session({
@@ -40,32 +34,15 @@ app.use(function (req, res, next) {
   } else {
     req.isAuthenticated = false
   }
-  console.log(req.isAuthenticated, 'session')
   next()
 })
 
-const checkJwt = jwt({
-  // Dynamically provide a signing key
-  // based on the kid in the header and
-  // the singing keys provided by the JWKS endpoint.
-  secret: jwksRsa.expressJwtSecret({
-    cache: true,
-    rateLimit: true,
-    jwksRequestsPerMinute: 5,
-    jwksUri: `https://lepine.auth0.com/.well-known/jwks.json`
-  }),
-
-  // Validate the audience and the issuer.
-  audience: '{Snippets!}',
-  issuer: `https://lepine.auth0.com/`,
-  algorithms: ['RS256']
-});
 
 //set endpoints
 
-const checkScopes = jwtAuthz(['read:messages']);
 
 //public endpoint
+
 app.get('/', (req, res) => {
   res.render('home', {isAuthenticated: req.isAuthenticated})
 })
@@ -108,20 +85,13 @@ app.get('/guest', (req, res) => {
   res.render('guest')
 })
 
-//private endpoint
-app.get('/api/private', checkJwt, checkScopes, (req, res) => {
-  res.json({
-    message: 'Hello from a private endpoint! You need to be authenticated and have a scope of read:messages to see this.'
-  });
-});
-
 
 ///////////////////////logout///////////////////////////////
 app.post('/logout', (req, res) => {
   res.redirect('/logout')
 })
 
-app.get('/logout', function (req, res) {
+app.get('/logout', (req, res) => {
   req.session.destroy()
   res.render('logout')
 })
