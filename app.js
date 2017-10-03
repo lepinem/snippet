@@ -7,8 +7,12 @@ const bodyParser = require('body-parser')
 const mustacheExpress = require('mustache-express')
 const dal = require('./dal')
 const mongoose = require('mongoose')
+const MongoClient = require('mongodb')
+const mongooseSession = require('mongoose-session')
+const bcrypt = require('bcryptjs')
 const Snippet = require('./models/Snippet')
 const User = require('./models/User')
+mongoose.Promise = require('bluebird')
 
 app.engine('mustache', mustacheExpress())
 app.set('view engine', 'mustache')
@@ -17,36 +21,34 @@ app.set('views', __dirname + '/views')
 app.use(express.static('public'))
 
 app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }))
-
-// app.use(expressJWT({ secret: TOKEN_SECRET }).unless({ path: ['/login', '/', '/adduser']}))
+app.use(bodyParser.urlencoded({ extended: false }))
 
 app.use(
   session({
     secret: 'jammyjam',
-    resave: false,
+    resave: true,
     saveUninitialized: true,
     cookie: { maxAge: null }
+    // store: mongooseSession(mongoose)
   })
 )
 
-app.use(function (req, res, next) {
-  if (req.session.usr) {
-    req.isAuthenticated = true
+const authorize = (req, res, next) => {
+  if (req.session.user) {
+    next()
   } else {
-    req.isAuthenticated = false
+    res.redirect("/login")
   }
-  next()
-})
-
+}
 
 //set endpoints
 
-
-//public endpoint
-
-app.get('/', (req, res) => {
-  res.render('home', {isAuthenticated: req.isAuthenticated})
+app.get('/', authorize, (req, res) => {
+  Snippet.find().then((addSnippet) => {
+  res.render('home', {
+    newSnippet: newSnippet
+  })
+  })
 })
 
 app.post('/login', (req, res) => {
@@ -68,7 +70,7 @@ app.post('/login/creds', (req, res) => {
   }
 })
 
-app.get('/admin', function (req, res) {
+app.get('/admin', (req, res) => {
   if (req.isAuthenticated) {
     const users = dal.getUsers()
     res.render('admin',{
@@ -85,6 +87,88 @@ app.post('/guest', (req, res) => {
 
 app.get('/guest', (req, res) => {
   res.render('guest')
+})
+
+app.post('/snippets', (req, res) => {
+  res.redirect('/snippets')
+})
+
+app.get('/snippets', (req, res) => {
+  res.render('snippets')
+})
+
+app.post('/addSnippet', (req, res) => {
+  res.redirect('/addSnippet')
+})
+
+app.get('/addSnippet', (req, res) => {
+  res.render('addSnippet')
+})
+
+app.post('/addSnippet/newSnippet', (req, res) => {
+  const title = req.body.title
+  const snippet = req.body.snippet
+  const notes = req.body.notes
+  const language = req.body.language
+  const tags = req.body.tags
+
+  const addSnippet = new Snippet()
+  addSnippet.title = title
+  addSnippet.snippet = snippet
+  addSnippet.notes = notes
+  addSnippet.language = language
+  addSnippet.tags = tags
+  addSnippet
+    .save()
+    .then((snippet) => {
+      res.redirect("/snippet")
+    })
+    .catch((error) => {
+      console.log(error)
+      res.render('addSnippet', {
+        addSnippet: addSnippet,
+        errors: error.errors
+      })
+    })
+})
+
+app.get('/register', (req, res) => {
+  res.render('register')
+})
+
+app.post('/register', (req, res) => {
+  const name = req.body.name
+  const email = req.body.email
+  const username = req.body.username
+  const password = req.body.password
+
+  const addUser = new User()
+  addUser.name = name
+  addUser.email = email
+  addUser.username = username
+  addUser.passwordHash = bcrypt.hashSync(password, 8)
+  addUser
+    .save()
+    .then((user) => {
+      res.redirect('/admin')
+    })
+    .catch((error) => {
+      res.render('register', {
+        addUser: addUser,
+        error: error.errors
+      })
+    })
+})
+
+app.get('/findSnippet', (req, res) => {
+  Snippet.findOne({
+    _id: req.params.id
+  })
+  .then((snippet) => {
+    res.render("snippet", {
+      snippet: snippet
+    })
+  })
 })
 
 

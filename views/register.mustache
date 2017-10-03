@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="/public/styles.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <meta charset="utf-8">
+    <title>Register</title>
+  </head>
+  <body>
+    <h1>Register</h1>
+
+    <form class="" action="/register" method="post">
+      <div class="">
+        <label for="">Name</label>
+        <input type="text" name="name" value="">{{#error.name}}Name is required{{/error.name}}
+      </div>
+      <div class="">
+        <label for="">Email</label>
+        <input type="email" name="email" value="">
+      </div>
+      <div class="">
+        <label for="">Username</label>
+        <input type="text" name="username" value="">
+      </div>
+      <div class="">
+        <label for="">Password</label>
+        <input type="password" name="password" value="">
+      </div>
+      <div class="">
+        <button type="submit" name="button">Submit</button>
+      </div>
+
+    </form>
+  </body>
+</html>

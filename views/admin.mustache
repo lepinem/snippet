@@ -2,7 +2,10 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="./public/styles.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="/public/styles.css">
+    
     <title>The Circle</title>
   </head>
   <body>
@@ -11,10 +14,14 @@
         <button type="submit" name="logout">LOGOUT</button>
       </form>
     </header>
-    <h1>You're in the Circle</h1>
+    <h1>Welcome {{loggedUsr.name}}, what would you like to do?</h1>
 
-    <h2>Welcome {{loggedUsr.name}}</h2>
-    <h3>These are your friends in the Circle</h3>
+    <form class="view_snippets" action="/snippets" method="post"><button type="submit" name="snippets">View Snippets</button></form>
+
+    <form class="add_snippet" action="/addSnippet" method="post"><button type="submit" name="add_snippet">Add Snippet</button></form>
+
+    <form class="edit_snippet" action="/editSnippet" method="post"><button type="submit" name="edit_snippet">Edit Snippet</button></form>
+
     {{#users}}
         <p>Name: {{name}}</p>
         <p>username: {{username}}</p>
