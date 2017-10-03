@@ -1,12 +1,14 @@
 //app.js
 
-const express = require('express');
-const app = express();
-const session = require('express-session');
-const bodyParser = require('body-parser');
-const mustacheExpress = require('mustache-express');
-const dal = require('./dal');
-
+const express = require('express')
+const app = express()
+const session = require('express-session')
+const bodyParser = require('body-parser')
+const mustacheExpress = require('mustache-express')
+const dal = require('./dal')
+const mongoose = require('mongoose')
+const Snippet = require('./models/Snippet')
+const User = require('./models/User')
 
 app.engine('mustache', mustacheExpress())
 app.set('view engine', 'mustache')
@@ -15,7 +17,7 @@ app.set('views', __dirname + '/views')
 app.use(express.static('public'))
 
 app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: true }))
 
 // app.use(expressJWT({ secret: TOKEN_SECRET }).unless({ path: ['/login', '/', '/adduser']}))
 

@@ -32,7 +32,7 @@
     "jest": "^21.1.0",
     "jwks-rsa": "^1.2.0",
     "mongodb": "^2.2.31",
-    "mongoose": "^4.11.11",
+    "mongoose": "^4.12.0",
     "mongoose-session": "0.0.4",
     "mustache": "^2.3.0",
     "mustache-express": "^1.2.5",
