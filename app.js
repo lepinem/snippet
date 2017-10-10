@@ -43,12 +43,8 @@ const authorize = (req, res, next) => {
 
 //set endpoints
 
-app.get('/', authorize, (req, res) => {
-  Snippet.find().then((addSnippet) => {
-  res.render('home', {
-    newSnippet: newSnippet
-  })
-  })
+app.get('/', (req, res) => {
+  res.render('home')
 })
 
 app.post('/login', (req, res) => {
@@ -105,7 +101,7 @@ app.get('/addSnippet', (req, res) => {
   res.render('addSnippet')
 })
 
-app.post('/addSnippet/newSnippet', (req, res) => {
+app.post('/addSnippet', (req, res) => {
   const title = req.body.title
   const snippet = req.body.snippet
   const notes = req.body.notes
@@ -148,8 +144,8 @@ app.post('/register', (req, res) => {
   addUser.username = username
   addUser.passwordHash = bcrypt.hashSync(password, 8)
   addUser
-    .save()
-    .then((user) => {
+    .save(addUser)
+    .then((addUser) => {
       res.redirect('/admin')
     })
     .catch((error) => {
@@ -183,5 +179,5 @@ app.get('/logout', (req, res) => {
 })
 ////////////////////////////////////////////////////////////
 
-app.listen(3001);
-console.log('Listening on http://localhost:3001');
+app.listen(3000);
+console.log('Listening on http://localhost:3000');

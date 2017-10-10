@@ -5,7 +5,7 @@ const url = "mongodb://127.0.0.1:27017/snippet"
 const mongoose = require('mongoose')
 const MongoClient = require('mongodb')
 mongoose.Promise = require("bluebird")
-mongoose.connect(url)
+mongoose.connect(url, {useMongoClient: true})
 
 getUser = (username) => {
   const foundUser = userInfo.find(user => username === user.username)
