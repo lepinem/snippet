@@ -13,6 +13,9 @@ const SnippetSchema = new Schema({
   tags: { type: String }
 })
 
+SnippetSchema.statics.findByTitle = function (name, cb) {
+    return this.find({ name: name })
+  }
 
 const Snippet = mongoose.model('Snippet', SnippetSchema)
 

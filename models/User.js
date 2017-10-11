@@ -2,6 +2,7 @@
 
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
+const bcrypt = require('bcrypt')
 
 const UserSchema = new Schema({
   id: { type: Number },
@@ -16,7 +17,7 @@ UserSchema.pre('save', function(next) {
   if (!user.isModified('password')) {
     next()
   }
-  bcrypt.genSalt(10, function(err, salt) {
+  bcrypt.genSalt(8, function(err, salt) {
     bcrypt.hash(user.password, salt, function(err, hash) {
       user.password = hash
       next()
@@ -24,7 +25,7 @@ UserSchema.pre('save', function(next) {
   })
 })
 
-AuthorSchema.methods.comparePassword = function(pwd, dbPass, done) {
+UserSchema.methods.comparePassword = function(pwd, dbPass, done) {
   bcrypt.compare(pwd, dbPass, (err, isMatch) => {
     done(err, isMatch)
   })

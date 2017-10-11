@@ -8,8 +8,7 @@ mongoose.Promise = require("bluebird")
 mongoose.connect(url, {useMongoClient: true})
 
 getUser = (username) => {
-  const foundUser = userInfo.find(user => username === user.username)
-  return foundUser
+  return User.find({'username': username})
 }
 
 getUserPass = (userpass) => {
@@ -21,4 +20,12 @@ getUsers = () => {
   return userInfo
 }
 
-module.exports = { getUser, getUserPass, getUsers }
+addUser = (newUser) => {
+  const user = new User(newUser)
+  user.save(function(err){
+    console.log(err)
+  })
+  return Promise.resolve('success')
+}
+
+module.exports = { getUser, getUserPass, getUsers, addUser }

@@ -9,6 +9,8 @@ const dal = require('./dal')
 const mongoose = require('mongoose')
 const MongoClient = require('mongodb')
 const mongooseSession = require('mongoose-session')
+const jwt = require('jsonwebtoken')
+const { createToken, ensureAuthentication } = require('./helpers.js')
 const bcrypt = require('bcryptjs')
 const Snippet = require('./models/Snippet')
 const User = require('./models/User')
@@ -26,7 +28,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(
   session({
     secret: 'jammyjam',
-    resave: true,
+    resave: false,
     saveUninitialized: true,
     cookie: { maxAge: null }
     // store: mongooseSession(mongoose)
@@ -42,10 +44,12 @@ const authorize = (req, res, next) => {
 }
 
 //set endpoints
-
+//////////////// HOME ///////////////////
 app.get('/', (req, res) => {
   res.render('home')
 })
+
+///////////////  LOGIN //////////////////
 
 app.post('/login', (req, res) => {
   res.redirect('/login')
@@ -56,15 +60,24 @@ app.get('/login', (req, res) => {
 })
 
 app.post('/login/creds', (req, res) => {
-  const sesh = req.session
-  const foundUsr = dal.getUser(req.body.username)
-  if (req.body.password === foundUsr.password) {
-    sesh.usr = { name: foundUsr.name }
-    res.redirect('/admin')
-  } else {
-    res.send('try again')
-  }
+  User.findOne({ username: req.body.username }, 'username password', function (err, user, next) {
+    if (err) return next(err)
+    if (!user) {
+      return res.status(401).send({ message: 'Wrong info' })
+    }
+    user.comparePassword(req.body.password, user.password, function ( err, isMatch ) {
+      console.log('is match', isMatch)
+      if (!isMatch) {
+        return res.status(401).send({ message: 'Wrong info' })
+      }
+      let token = { token: createToken(user)};
+      req.session.jwtToken = token;
+      res.redirect('/admin');
+    })
+  })
 })
+
+/////////////  SECURE ///////////////////
 
 app.get('/admin', (req, res) => {
   if (req.isAuthenticated) {
@@ -77,6 +90,8 @@ app.get('/admin', (req, res) => {
   }
 })
 
+/////////////  GUEST  ///////////////////
+
 app.post('/guest', (req, res) => {
   res.redirect('/guest')
 })
@@ -84,6 +99,8 @@ app.post('/guest', (req, res) => {
 app.get('/guest', (req, res) => {
   res.render('guest')
 })
+
+//////////////  SNIPPETS  ///////////////
 
 app.post('/snippets', (req, res) => {
   res.redirect('/snippets')
@@ -93,9 +110,8 @@ app.get('/snippets', (req, res) => {
   res.render('snippets')
 })
 
-app.post('/addSnippet', (req, res) => {
-  res.redirect('/addSnippet')
-})
+///////////////  ADD SNIPPET  ///////////
+
 
 app.get('/addSnippet', (req, res) => {
   res.render('addSnippet')
@@ -128,33 +144,19 @@ app.post('/addSnippet', (req, res) => {
     })
 })
 
+//////////////  REGISTER USER  /////////////////
+
 app.get('/register', (req, res) => {
   res.render('register')
 })
 
 app.post('/register', (req, res) => {
-  const name = req.body.name
-  const email = req.body.email
-  const username = req.body.username
-  const password = req.body.password
-
-  const addUser = new User()
-  addUser.name = name
-  addUser.email = email
-  addUser.username = username
-  addUser.passwordHash = bcrypt.hashSync(password, 8)
-  addUser
-    .save(addUser)
-    .then((addUser) => {
-      res.redirect('/admin')
-    })
-    .catch((error) => {
-      res.render('register', {
-        addUser: addUser,
-        error: error.errors
-      })
-    })
+  dal.addUser(req.body).then((newUser) => {
+    res.redirect('/admin')
+  })
 })
+
+////////////////  FIND SNIPPET  ////////////////////////////
 
 app.get('/findSnippet', (req, res) => {
   Snippet.findOne({
